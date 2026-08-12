@@ -11,8 +11,31 @@
   </style>
 </head>
 <body>
+  <!-- Mobile Header Navigation Bar -->
+  <header class="mobile-header">
+    <div class="mobile-brand">
+      <div style="width: 32px; height: 32px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.12); flex-shrink: 0;">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width: 20px; height: 20px; object-fit: contain;">
+      </div>
+      <div>
+        <h2 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0; line-height: 1.2;">{{ cafe_name }}</h2>
+      </div>
+    </div>
+    <button class="mobile-toggle" id="mobileMenuBtn" aria-label="Toggle Navigation">
+      <svg class="icon-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+      <svg class="icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none;">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Mobile Overlay Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <div class="layout">
-    <aside class="sidebar">
+    <aside class="sidebar" id="appSidebar">
       <div class="sidebar-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
         <div style="width: 36px; height: 36px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.12); flex-shrink: 0;">
           <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width: 22px; height: 22px; object-fit: contain;">
@@ -157,5 +180,54 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <script>
+    (function() {
+      const btn = document.getElementById('mobileMenuBtn');
+      const sidebar = document.getElementById('appSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      
+      if (!btn || !sidebar || !backdrop) return;
+      
+      const iconMenu = btn.querySelector('.icon-menu');
+      const iconClose = btn.querySelector('.icon-close');
+
+      function toggleMenu(show) {
+        const isOpen = show !== undefined ? show : !sidebar.classList.contains('open');
+        if (isOpen) {
+          sidebar.classList.add('open');
+          backdrop.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          if (iconMenu) iconMenu.style.display = 'none';
+          if (iconClose) iconClose.style.display = 'block';
+        } else {
+          sidebar.classList.remove('open');
+          backdrop.classList.remove('active');
+          document.body.style.overflow = '';
+          if (iconMenu) iconMenu.style.display = 'block';
+          if (iconClose) iconClose.style.display = 'none';
+        }
+      }
+
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleMenu();
+      });
+
+      backdrop.addEventListener('click', function() {
+        toggleMenu(false);
+      });
+
+      const navLinks = sidebar.querySelectorAll('a');
+      navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+          if (window.innerWidth <= 992) {
+            toggleMenu(false);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
+
