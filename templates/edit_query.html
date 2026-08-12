@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Edit Query #{{ item.id }}</h1>
+    <p class="muted">Update customer request details, payment, and status.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+
+<section class="panel" style="max-width: 800px;">
+  <form method="POST">
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="customer_name">Customer Name</label>
+        <input class="form-control" id="customer_name" name="customer_name" value="{{ item.customer_name }}" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input class="form-control" id="phone" name="phone" value="{{ item.phone }}" required>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="service_type">Service Type</label>
+        <input class="form-control" id="service_type" name="service_type" value="{{ item.service_type }}" required>
+      </div>
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select class="form-select" id="status" name="status">
+          <option {% if item.status == 'New' %}selected{% endif %}>New</option>
+          <option {% if item.status == 'Pending' %}selected{% endif %}>Pending</option>
+          <option {% if item.status == 'Completed' %}selected{% endif %}>Completed</option>
+          <option {% if item.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="priority">Priority</label>
+        <select class="form-select" id="priority" name="priority">
+          <option {% if item.priority == 'Normal' %}selected{% endif %}>Normal</option>
+          <option {% if item.priority == 'High' %}selected{% endif %}>High</option>
+          <option {% if item.priority == 'Urgent' %}selected{% endif %}>Urgent</option>
+        </select>
+      </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="amount">Amount (₹)</label>
+        <input class="form-control" type="number" step="0.01" id="amount" name="amount" value="{{ item.amount }}">
+      </div>
+      <div class="form-group">
+        <label for="payment_method">Payment Method</label>
+        <select class="form-select" id="payment_method" name="payment_method" required>
+          <option value="Cash" {% if item.payment_method == 'Cash' or not item.payment_method %}selected{% endif %}>Cash</option>
+          <option value="UPI" {% if item.payment_method == 'UPI' %}selected{% endif %}>UPI / QR Scan</option>
+          <option value="Online" {% if item.payment_method == 'Online' %}selected{% endif %}>Online Transfer</option>
+          <option value="Card" {% if item.payment_method == 'Card' %}selected{% endif %}>Card Payment</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="message">Customer Query / Description</label>
+      <textarea class="form-control" id="message" name="message" rows="4" required>{{ item.message }}</textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="notes">Staff Notes / Reference Info</label>
+      <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add internal updates here...">{{ item.notes or '' }}</textarea>
+    </div>
+    
+    <div style="margin-top: 10px;">
+      <button class="btn btn-primary" type="submit">Update Query</button>
+      <a class="btn btn-light" href="{{ url_for('dashboard') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

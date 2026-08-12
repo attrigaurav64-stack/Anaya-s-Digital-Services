@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Counter QR Codes</h1>
+    <p class="muted">Print, display, or generate payment and inquiry QR codes at your cafe desk.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- WhatsApp Contact QR -->
+  <section class="panel">
+    <div class="qr-box" style="margin: 0 auto;">
+      <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; text-align: center;">WhatsApp Contact QR</h2>
+      <p class="muted" style="text-align: center;">Customers can scan this to open chat with your support line instantly.</p>
+      
+      <img src="{{ url_for('static', filename='img/whatsapp_qr.png') }}" alt="WhatsApp QR">
+      
+      <p style="margin-top: 15px; font-size: 14px; text-align: center;">
+        <strong>WhatsApp Link:</strong> <br>
+        <span style="color: var(--primary); font-family: monospace; font-size: 12px;">+{{ number }}</span>
+      </p>
+      
+      <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <a class="btn btn-success" href="{{ whatsapp_link }}" target="_blank">💬 Open Chat Directly</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPI Payment QR -->
+  <section class="panel">
+    <div class="qr-box" style="margin: 0 auto;">
+      <h2 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; text-align: center;">UPI QR Code Generator</h2>
+      <p class="muted" style="text-align: center;">Enter invoice/session amount to generate a payment QR code.</p>
+      
+      <div style="margin: 20px 0;">
+        <div class="form-group" style="text-align: left;">
+          <label for="qr-amount">Enter Amount (₹)</label>
+          <input class="form-control" type="number" id="qr-amount" value="50" min="0" placeholder="e.g. 100">
+        </div>
+        <button id="generate-upi-btn" class="btn btn-primary" style="width: 100%; margin-top: 6px;">
+          ⚡ Generate UPI QR Code
+        </button>
+      </div>
+
+      <div id="upi-qr-container" style="display: none; text-align: center;">
+        <img id="upi-qr-img" src="" alt="UPI QR" style="width: 200px; height: 200px;">
+        <p style="font-size: 13px; font-weight: 700; color: #047857; margin-top: 10px;">
+          Active VPA: <span style="font-family: monospace;">{{ upi_id }}</span>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('qr-amount');
+    const generateBtn = document.getElementById('generate-upi-btn');
+    const qrContainer = document.getElementById('upi-qr-container');
+    const qrImg = document.getElementById('upi-qr-img');
+    
+    function generateQR() {
+      const amount = amountInput.value || 0;
+      qrImg.src = "{{ url_for('generate_upi_qr') }}?amount=" + amount;
+      qrContainer.style.display = 'block';
+    }
+    
+    generateBtn.addEventListener('click', generateQR);
+    
+    // Auto-generate on load
+    generateQR();
+  });
+</script>
+{% endblock %}

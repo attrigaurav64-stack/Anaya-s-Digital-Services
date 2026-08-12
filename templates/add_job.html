@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Generate Job & Session Token</h1>
+    <p class="muted">Start a computer system lease, internet session, or scanning job.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('jobs') }}">Back to Active Jobs</a>
+</div>
+
+<section class="panel" style="max-width: 700px;">
+  <form method="POST">
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="token_code">Token Code (Auto-generated)</label>
+        <input class="form-control" id="token_code" name="token_code" value="{{ auto_token }}" readonly style="font-family: monospace; font-weight: 700; background-color: #f1f5f9; color: var(--primary);">
+      </div>
+      <div class="form-group">
+        <label for="customer_name">Customer Name</label>
+        <input class="form-control" id="customer_name" name="customer_name" placeholder="John Doe" required>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="pc_number">Device / PC Assignment</label>
+        <select class="form-select" id="pc_number" name="pc_number" required>
+          <option value="">Select PC/Device</option>
+          <option value="PC-01">PC-01 (Main Cabin)</option>
+          <option value="PC-02">PC-02 (Main Cabin)</option>
+          <option value="PC-03">PC-03 (Cabin B)</option>
+          <option value="PC-04">PC-04 (Cabin B)</option>
+          <option value="PC-05">PC-05 (Laptop Desk)</option>
+          <option value="PC-06">PC-06 (Laptop Desk)</option>
+          <option value="Printer-01">Black & White LaserJet</option>
+          <option value="Printer-02">Color DeskJet</option>
+          <option value="Scanner-01">Flatbed Scanner</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="service_type">Service Category</label>
+        <select class="form-select" id="service_type" name="service_type" required>
+          <option value="">Select Service</option>
+          {% for s in services %}
+            <option value="{{ s.name }}" data-price="{{ s.price }}">{{ s.name }} (₹{{ s.price }})</option>
+          {% endfor %}
+          <option value="custom">Other / Custom</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="duration_mins">Duration (Minutes - 0 for no limit)</label>
+        <input class="form-control" type="number" id="duration_mins" name="duration_mins" value="60" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="cost">Assigned Rate / Charge (₹)</label>
+        <input class="form-control" type="number" step="0.1" id="cost" name="cost" value="40" min="0" required>
+      </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button class="btn btn-primary" type="submit">Generate & Start Session</button>
+      <a class="btn btn-light" href="{{ url_for('jobs') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const serviceSelect = document.getElementById('service_type');
+    const durationInput = document.getElementById('duration_mins');
+    const costInput = document.getElementById('cost');
+    
+    function updateCost() {
+      const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+      if (!selectedOption || serviceSelect.value === "" || serviceSelect.value === "custom") return;
+      
+      const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+      const duration = parseInt(durationInput.value) || 0;
+      
+      const svcName = serviceSelect.value.toLowerCase();
+      if (svcName.includes('hour') || svcName.includes('computer') || svcName.includes('session') || svcName.includes('browsing')) {
+        const finalCost = (duration / 60) * price;
+        costInput.value = finalCost.toFixed(2);
+      } else {
+        costInput.value = price.toFixed(2);
+      }
+    }
+    
+    serviceSelect.addEventListener('change', updateCost);
+    durationInput.addEventListener('input', updateCost);
+  });
+</script>
+{% endblock %}

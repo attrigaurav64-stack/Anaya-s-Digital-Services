@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Edit Service Item</h1>
+    <p class="muted">Update details or pricing for this catalogued service.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('services') }}">Back to Catalogue</a>
+</div>
+
+<section class="panel" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Service Name / Title</label>
+      <input class="form-control" id="name" name="name" value="{{ service.name }}" required>
+    </div>
+    <div class="form-group">
+      <label for="price">Standard Service Price (₹)</label>
+      <input class="form-control" type="number" step="0.01" id="price" name="price" value="{{ service.price }}" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Service Description / Notes</label>
+      <textarea class="form-control" id="description" name="description" rows="4">{{ service.description or '' }}</textarea>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button class="btn btn-primary" type="submit">Update Service</button>
+      <a class="btn btn-light" href="{{ url_for('services') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Staff Directory</h1>
+    <p class="muted">Manage cyber cafe employees, roles, salaries, and system activity status.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('add_staff') }}">+ Add Staff Member</a>
+</div>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Role / Title</th>
+          <th>Phone</th>
+          <th>Salary (₹/mo)</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in staff %}
+          <tr>
+            <td style="font-weight: 600; color: var(--text-muted);">#ST-{{ member.id }}</td>
+            <td><strong>{{ member.name }}</strong></td>
+            <td><span style="font-weight: 500; color: #475569;">{{ member.role }}</span></td>
+            <td>{{ member.phone }}</td>
+            <td><strong>₹{{ '%.2f'|format(member.salary) }}</strong></td>
+            <td>
+              <span class="badge badge-{% if member.status == 'Active' %}completed{% else %}cancelled{% endif %}">
+                {{ member.status }}
+              </span>
+            </td>
+            <td class="actions">
+              <a href="{{ url_for('edit_staff', id=member.id) }}">Edit Info</a>
+              <span style="color: #cbd5e1;">|</span>
+              <a onclick="return confirm('Are you sure you want to delete this staff record?')" href="{{ url_for('delete_staff', id=member.id) }}" class="action-danger">Delete</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No staff members added yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

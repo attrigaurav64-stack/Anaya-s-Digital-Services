@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Edit Staff Details</h1>
+    <p class="muted">Modify employee record, role designation, or employment status.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('staff') }}">Back to Directory</a>
+</div>
+
+<section class="panel" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Staff Full Name</label>
+      <input class="form-control" id="name" name="name" value="{{ staff.name }}" required>
+    </div>
+    <div class="form-group">
+      <label for="role">Role / Designation</label>
+      <input class="form-control" id="role" name="role" value="{{ staff.role }}" required>
+    </div>
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input class="form-control" id="phone" name="phone" value="{{ staff.phone }}" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input class="form-control" type="email" id="email" name="email" value="{{ staff.email or '' }}" required>
+    </div>
+    <div class="form-group">
+      <label for="salary">Monthly Base Salary (₹)</label>
+      <input class="form-control" type="number" step="0.01" id="salary" name="salary" value="{{ staff.salary }}" required>
+    </div>
+    <div class="form-group">
+      <label for="status">Employment Status</label>
+      <select class="form-select" id="status" name="status" required>
+        <option value="Active" {% if staff.status == 'Active' %}selected{% endif %}>Active</option>
+        <option value="Inactive" {% if staff.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+      </select>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 25px 0 12px; font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">Staff Login Credentials</h3>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="username">Login Username</label>
+        <input class="form-control" id="username" name="username" value="{{ staff.username or '' }}" placeholder="john_staff">
+      </div>
+      <div class="form-group">
+        <label for="password">Login Password (Leave blank to keep current)</label>
+        <input class="form-control" type="password" id="password" name="password" placeholder="••••••••">
+      </div>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 25px 0 12px; font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">Access Control Permissions</h3>
+    
+    <div class="form-group">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px;">
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="customers" {% if 'customers' in perms %}checked{% endif %}> Customers Directory
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="queries" {% if 'queries' in perms %}checked{% endif %}> Inquiries & Orders
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="jobs" {% if 'jobs' in perms %}checked{% endif %}> Jobs & Tokens
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="services" {% if 'services' in perms %}checked{% endif %}> Services & Prices
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="payments" {% if 'payments' in perms %}checked{% endif %}> Payment Logs
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="invoices" {% if 'invoices' in perms %}checked{% endif %}> Invoices
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="expenses" {% if 'expenses' in perms %}checked{% endif %}> Expenses Tracking
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="whatsapp" {% if 'whatsapp' in perms %}checked{% endif %}> WhatsApp Inbox
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="qr_codes" {% if 'qr_codes' in perms %}checked{% endif %}> QR Codes Generator
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="reports" {% if 'reports' in perms %}checked{% endif %}> Reports & Analytics
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="staff" {% if 'staff' in perms %}checked{% endif %}> Staff Management
+        </label>
+        <label style="font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="permissions[]" value="settings" {% if 'settings' in perms %}checked{% endif %}> Cafe Settings
+        </label>
+      </div>
+    </div>
+    
+    <div style="margin-top: 30px;">
+      <button class="btn btn-primary" type="submit">Update Employee Details</button>
+      <a class="btn btn-light" href="{{ url_for('staff') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

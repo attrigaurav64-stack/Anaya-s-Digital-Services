@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - {{ cafe_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+  <div class="login-card">
+    <div class="brand-header">
+      <div class="brand-logo-container">
+        <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+      </div>
+      <h2 style="background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 28px; letter-spacing: -0.5px; margin-top: 10px; display: inline-block;">{{ cafe_name }}</h2>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <div class="login-tabs" style="display: flex; border-bottom: 2px solid var(--card-border); margin-bottom: 25px;">
+      <button type="button" id="tab-staff" class="tab-btn active" style="flex: 1; padding: 12px; font-weight: 700; border: none; background: none; color: var(--primary); border-bottom: 2px solid var(--primary); cursor: pointer; font-size: 14px; transition: all 0.2s;">Staff Portal</button>
+      <button type="button" id="tab-admin" class="tab-btn" style="flex: 1; padding: 12px; font-weight: 600; border: none; background: none; color: var(--text-muted); cursor: pointer; font-size: 14px; transition: all 0.2s;">Admin Portal</button>
+    </div>
+
+    <form method="POST">
+      <input type="hidden" id="login_type" name="login_type" value="staff">
+      
+      <div class="form-group" id="role-group">
+        <label for="role">Assigned Staff Role</label>
+        <select class="form-select" id="role" name="role">
+          <option value="">-- Choose Assigned Role --</option>
+          <option value="Manager">Cafe Manager</option>
+          <option value="Operator">System Operator / Support</option>
+          <option value="Designer">Graphics Designer / Typist</option>
+          <option value="Technician">Hardware Technician</option>
+          <option value="Helper">Utility Helper</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input class="form-control" type="text" id="username" name="username" placeholder="Enter username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input class="form-control" type="password" id="password" name="password" placeholder="Enter password" required>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" type="submit">Login</button>
+      <div style="text-align: center; margin-top: 16px;" id="recovery-link-container">
+        <a href="{{ url_for('forgot_password') }}" style="color: var(--primary); font-size: 13px; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+      </div>
+    </form>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const tabStaff = document.getElementById('tab-staff');
+        const tabAdmin = document.getElementById('tab-admin');
+        const loginType = document.getElementById('login_type');
+        const roleGroup = document.getElementById('role-group');
+        const roleSelect = document.getElementById('role');
+        const recoveryContainer = document.getElementById('recovery-link-container');
+        
+        tabStaff.addEventListener('click', function() {
+          tabStaff.classList.add('active');
+          tabStaff.style.color = 'var(--primary)';
+          tabStaff.style.borderBottom = '2px solid var(--primary)';
+          tabStaff.style.fontWeight = '700';
+
+          tabAdmin.classList.remove('active');
+          tabAdmin.style.color = 'var(--text-muted)';
+          tabAdmin.style.borderBottom = 'none';
+          tabAdmin.style.fontWeight = '600';
+
+          loginType.value = 'staff';
+          roleGroup.style.display = 'block';
+          roleSelect.required = true;
+          recoveryContainer.style.display = 'block';
+        });
+
+        tabAdmin.addEventListener('click', function() {
+          tabAdmin.classList.add('active');
+          tabAdmin.style.color = 'var(--primary)';
+          tabAdmin.style.borderBottom = '2px solid var(--primary)';
+          tabAdmin.style.fontWeight = '700';
+
+          tabStaff.classList.remove('active');
+          tabStaff.style.color = 'var(--text-muted)';
+          tabStaff.style.borderBottom = 'none';
+          tabStaff.style.fontWeight = '600';
+
+          loginType.value = 'admin';
+          roleGroup.style.display = 'none';
+          roleSelect.required = false;
+          roleSelect.value = '';
+          recoveryContainer.style.display = 'none';
+        });
+
+        // Set initial required state
+        roleSelect.required = true;
+      });
+    </script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Services & Pricing Catalogue</h1>
+    <p class="muted">Manage available services and their default standard price rates.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('add_service') }}">+ Add New Service</a>
+</div>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Service Name</th>
+          <th>Standard Rate</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for service in services %}
+          <tr>
+            <td style="font-weight: 600; color: var(--text-muted);">#{{ service.id }}</td>
+            <td><strong>{{ service.name }}</strong></td>
+            <td><strong style="color: #047857; font-size: 15px;">₹{{ '%.2f'|format(service.price) }}</strong></td>
+            <td style="color: var(--text-muted); font-size: 13px;">{{ service.description or '-' }}</td>
+            <td class="actions">
+              <a href="{{ url_for('edit_service', id=service.id) }}">Edit</a>
+              <span style="color: #cbd5e1;">|</span>
+              <a onclick="return confirm('Are you sure you want to delete this service?')" href="{{ url_for('delete_service', id=service.id) }}" class="action-danger">Delete</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No services catalogued yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

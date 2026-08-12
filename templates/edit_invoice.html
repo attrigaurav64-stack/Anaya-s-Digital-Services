@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Edit Invoice #{{ invoice.invoice_number }}</h1>
+    <p class="muted">Update customer details, billing items, or status.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('invoices') }}">Back to Invoices</a>
+</div>
+
+<section class="panel" style="max-width: 900px;">
+  <form method="POST">
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="customer_name">Customer Name</label>
+        <input class="form-control" id="customer_name" name="customer_name" value="{{ invoice.customer_name }}" required>
+      </div>
+      <div class="form-group">
+        <label for="customer_phone">Customer Phone (Optional)</label>
+        <input class="form-control" id="customer_phone" name="customer_phone" value="{{ invoice.customer_phone or '' }}">
+      </div>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 25px 0 12px; font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">Billing Items</h3>
+    
+    <div id="items-container">
+      {% for line in lines %}
+      <div class="grid-invoice-row" style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 12px; margin-bottom: 12px; align-items: center;">
+        <div class="form-group" style="margin: 0;">
+          <select class="form-select service-dropdown">
+            <option value="">-- Choose Service --</option>
+            {% for s in services %}
+              <option value="{{ s.name }}" data-price="{{ s.price }}" {% if s.name == line.name %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
+            <option value="custom" {% if line.name and line.name not in services|map(attribute='name') %}selected{% endif %}>-- Custom Item --</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control item-name-field" name="item_name[]" placeholder="Item / Service Name" required value="{{ line.name }}">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control rate-field" type="number" step="0.01" name="item_rate[]" placeholder="Rate (₹)" required value="{{ line.rate }}">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control qty-field" type="number" name="item_qty[]" placeholder="Qty" required value="{{ line.qty }}">
+        </div>
+        <div>
+          <button type="button" class="btn btn-danger remove-row-btn" style="padding: 10px 14px;">🗑️</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" id="add-row-btn" class="btn btn-light" style="margin-top: 8px;">+ Add Another Item</button>
+
+    <h3 style="font-size: 16px; margin: 30px 0 12px; font-weight: 700; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">Summary & Tax</h3>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="tax">Tax / GST (₹)</label>
+        <input class="form-control" type="number" step="0.01" id="tax" name="tax" value="{{ invoice.tax }}">
+      </div>
+      <div class="form-group">
+        <label for="discount">Discount / Rebate (₹)</label>
+        <input class="form-control" type="number" step="0.01" id="discount" name="discount" value="{{ invoice.discount }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="status">Invoice Status</label>
+      <select class="form-select" id="status" name="status" required>
+        <option value="Paid" {% if invoice.status == 'Paid' %}selected{% endif %}>Paid (Records automated Cash transaction)</option>
+        <option value="Unpaid" {% if invoice.status == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+      </select>
+    </div>
+
+    <div style="margin-top: 25px; border-top: 1px solid var(--card-border); padding-top: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <h4 style="font-size: 18px; margin: 0;">Total Amount: <span id="grand-total" style="color: var(--primary); font-weight: 700;">₹{{ '%.2f'|format(invoice.total_amount) }}</span></h4>
+      </div>
+      <div>
+        <button class="btn btn-primary" type="submit">Update & Save Invoice</button>
+        <a class="btn btn-light" href="{{ url_for('invoices') }}" style="margin-left: 8px;">Cancel</a>
+      </div>
+    </div>
+  </form>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('items-container');
+    const addRowBtn = document.getElementById('add-row-btn');
+    const grandTotalSpan = document.getElementById('grand-total');
+    
+    const optionsHtml = `
+      <option value="">-- Choose Service --</option>
+      {% for s in services %}
+        <option value="{{ s.name }}" data-price="{{ s.price }}">{{ s.name }}</option>
+      {% endfor %}
+      <option value="custom">-- Custom Item --</option>
+    `;
+
+    // Add row action
+    addRowBtn.addEventListener('click', function() {
+      const newRow = document.createElement('div');
+      newRow.className = 'grid-invoice-row';
+      newRow.style.display = 'grid';
+      newRow.style.gridTemplateColumns = '2fr 2fr 1fr 1fr auto';
+      newRow.style.gap = '12px';
+      newRow.style.marginBottom = '12px';
+      newRow.style.alignItems = 'center';
+      newRow.innerHTML = `
+        <div class="form-group" style="margin: 0;">
+          <select class="form-select service-dropdown">
+            ${optionsHtml}
+          </select>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control item-name-field" name="item_name[]" placeholder="Item / Service Name" required>
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control rate-field" type="number" step="0.01" name="item_rate[]" placeholder="Rate (₹)" required value="0">
+        </div>
+        <div class="form-group" style="margin: 0;">
+          <input class="form-control qty-field" type="number" name="item_qty[]" placeholder="Qty" required value="1">
+        </div>
+        <div>
+          <button type="button" class="btn btn-danger remove-row-btn" style="padding: 10px 14px;">🗑️</button>
+        </div>
+      `;
+      container.appendChild(newRow);
+      bindRowEvents(newRow);
+      calculateTotal();
+    });
+
+    // Event delegation for removal
+    container.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-row-btn') || e.target.parentElement.classList.contains('remove-row-btn')) {
+        const row = e.target.closest('.grid-invoice-row');
+        if (container.children.length > 1) {
+          row.remove();
+          calculateTotal();
+        } else {
+          alert('At least one item line is required.');
+        }
+      }
+    });
+
+    function bindRowEvents(row) {
+      const serviceSelect = row.querySelector('.service-dropdown');
+      const nameField = row.querySelector('.item-name-field');
+      const rateField = row.querySelector('.rate-field');
+      
+      serviceSelect.addEventListener('change', function() {
+        const selectedOpt = this.options[this.selectedIndex];
+        if (selectedOpt && this.value !== "" && this.value !== "custom") {
+          nameField.value = this.value;
+          rateField.value = selectedOpt.getAttribute('data-price') || 0;
+        } else if (this.value === "custom") {
+          nameField.value = "";
+          rateField.value = 0;
+        }
+        calculateTotal();
+      });
+
+      const inputs = row.querySelectorAll('.rate-field, .qty-field');
+      inputs.forEach(input => {
+        input.addEventListener('input', calculateTotal);
+      });
+    }
+
+    // Bind events for the initial rows
+    document.querySelectorAll('.grid-invoice-row').forEach(bindRowEvents);
+    document.getElementById('tax').addEventListener('input', calculateTotal);
+    document.getElementById('discount').addEventListener('input', calculateTotal);
+
+    function calculateTotal() {
+      let subtotal = 0;
+      const rates = document.querySelectorAll('.rate-field');
+      const qtys = document.querySelectorAll('.qty-field');
+      
+      rates.forEach((rateInput, idx) => {
+        const rate = parseFloat(rateInput.value) || 0;
+        const qty = parseInt(qtys[idx].value) || 0;
+        subtotal += rate * qty;
+      });
+
+      const tax = parseFloat(document.getElementById('tax').value) || 0;
+      const discount = parseFloat(document.getElementById('discount').value) || 0;
+      const total = subtotal + tax - discount;
+      
+      grandTotalSpan.textContent = '₹' + total.toFixed(2);
+    }
+    
+    // Initial run
+    calculateTotal();
+  });
+</script>
+{% endblock %}

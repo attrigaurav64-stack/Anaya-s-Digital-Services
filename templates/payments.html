@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Payments Logged</h1>
+    <p class="muted">Monitor income transactions, invoicing receipts, and UPI logs.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('add_payment') }}">+ Log New Payment</a>
+</div>
+
+<section class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Transaction ID</th>
+          <th>Customer Name</th>
+          <th>Amount Paid</th>
+          <th>Payment Mode</th>
+          <th>Payment Date</th>
+          <th>Notes / Reference</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pmt in payments %}
+          <tr>
+            <td style="font-weight: 600; color: var(--text-muted);">#TR-{{ pmt.id }}</td>
+            <td><strong>{{ pmt.customer_name }}</strong></td>
+            <td><strong style="color: #047857; font-size: 15px;">₹{{ '%.2f'|format(pmt.amount) }}</strong></td>
+            <td>
+              <span class="badge" style="background-color: {% if pmt.payment_method == 'UPI' %}#e0f2fe{% elif pmt.payment_method == 'Card' %}#fae8ff{% else %}#f1f5f9{% endif %}; color: {% if pmt.payment_method == 'UPI' %}#0369a1{% elif pmt.payment_method == 'Card' %}#a21caf{% else %}#334155{% endif %}; border: 1px solid rgba(0,0,0,0.05);">
+                {{ pmt.payment_method }}
+              </span>
+            </td>
+            <td>{{ pmt.payment_date.strftime('%d %b %Y, %I:%M %p') }}</td>
+            <td style="font-size: 13px; color: var(--text-muted); max-width: 250px;">{{ pmt.notes or '-' }}</td>
+            <td class="actions">
+              <a onclick="return confirm('Are you sure you want to delete this payment log?')" href="{{ url_for('delete_payment', id=pmt.id) }}" class="action-danger">Delete Log</a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No payments logged yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

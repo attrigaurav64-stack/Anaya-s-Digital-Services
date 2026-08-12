@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP - {{ cafe_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="auth-body">
+  <div class="login-card">
+    <div class="brand-header">
+      <div class="brand-logo-container">
+        <img class="brand-logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo">
+      </div>
+      <h2 style="background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 28px; letter-spacing: -0.5px; margin-top: 10px; display: inline-block;">Verify OTP</h2>
+      <p class="muted">Enter the 6-digit code sent to your registered email</p>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <form method="POST">
+      <div class="form-group">
+        <label for="otp">One-Time Password (OTP)</label>
+        <input class="form-control" type="text" id="otp" name="otp" placeholder="Enter 6-digit OTP" required maxlength="6" pattern="\d{6}" style="text-align: center; font-size: 18px; letter-spacing: 4px; font-family: monospace;">
+      </div>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" type="submit">Verify & Continue</button>
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('forgot_password') }}" style="color: var(--primary); font-size: 13px; text-decoration: none; font-weight: 600;">Resend OTP / Back</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

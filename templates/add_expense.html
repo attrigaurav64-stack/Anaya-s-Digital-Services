@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Log New Expense</h1>
+    <p class="muted">Record a new operational expense or payment made.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('expenses') }}">Back to Expenses</a>
+</div>
+
+<section class="panel" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="title">Expense Title / Item Purchased</label>
+      <input class="form-control" id="title" name="title" placeholder="e.g. A4 Paper Rim (5 Pack)" required>
+    </div>
+    <div class="form-group">
+      <label for="category">Category</label>
+      <select class="form-select" id="category" name="category" required>
+        <option value="Stationery & Printing Paper">Stationery & Printing Paper</option>
+        <option value="Electricity / Electricity Bill">Electricity / Utility Bills</option>
+        <option value="Internet / Broadband Rental">Internet Broadband</option>
+        <option value="PC Hardware & Repairs">PC Hardware / Repairs</option>
+        <option value="Tea, Water & Refreshments">Tea & Water / Refreshments</option>
+        <option value="Staff Payouts">Staff Salaries / Payouts</option>
+        <option value="Rent & Infrastructure">Rent & Repairs</option>
+        <option value="Other">Other Miscellaneous</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="amount">Amount Spent (₹)</label>
+      <input class="form-control" type="number" step="0.01" id="amount" name="amount" placeholder="250.00" required>
+    </div>
+    <div class="form-group">
+      <label for="notes">Notes / Reference Details (Optional)</label>
+      <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Store name, receipt number, or brief notes..."></textarea>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button class="btn btn-primary" type="submit">Log Expense</button>
+      <a class="btn btn-light" href="{{ url_for('expenses') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

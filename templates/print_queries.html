@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inquiries Report - {{ cafe_name }}</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      background: #fff;
+      padding: 30px;
+      margin: 0;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      color: #be123c;
+    }
+    .header p {
+      font-size: 14px;
+      color: #64748b;
+      margin: 5px 0 0 0;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .table th, .table td {
+      padding: 12px 15px;
+      font-size: 13px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+    .table th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 9999px;
+      text-transform: capitalize;
+    }
+    .badge-new { background-color: #dbeafe; color: #1e40af; }
+    .badge-pending { background-color: #fef3c7; color: #92400e; }
+    .badge-completed { background-color: #dcfce7; color: #166534; }
+    .badge-cancelled { background-color: #fee2e2; color: #991b1b; }
+    
+    .no-print-toolbar {
+      background: #f8fafc;
+      padding: 15px 30px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      background: #fff;
+      color: #334155;
+    }
+    .btn-primary {
+      background: #be123c;
+      color: #fff;
+      border-color: #be123c;
+    }
+    @media print {
+      .no-print-toolbar {
+        display: none !important;
+      }
+      body {
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print-toolbar">
+    <button class="btn btn-primary" onclick="window.print()">Print Document</button>
+    <button class="btn" onclick="window.close()">Close Window</button>
+  </div>
+  
+  <div class="header">
+    <div>
+      <h1>Inquiries & Orders Report</h1>
+      <p style="font-size: 15px; font-weight: 600; color: #be123c; margin: 5px 0 0 0;">{{ cafe_name }}</p>
+    </div>
+    <div style="text-align: right;">
+      <p style="font-weight: 600; color: #0f172a; margin: 0;">Generated At</p>
+      <p id="time-stamp" style="font-size: 13px; color: #64748b; margin: 5px 0 0 0;"></p>
+    </div>
+  </div>
+  
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Service</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Payment</th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in queries %}
+        <tr>
+          <td style="font-weight: 600; color: #64748b;">#{{ q.id }}</td>
+          <td>
+            <strong>{{ q.customer_name }}</strong><br>
+            <span style="color: #64748b; font-size: 11px;">{{ q.phone }}</span>
+          </td>
+          <td>{{ q.service_type }}</td>
+          <td style="max-width: 200px;">{{ q.message }}</td>
+          <td style="font-weight: 700;">₹{{ '%.2f'|format(q.amount) }}</td>
+          <td style="font-weight: 600; color: #475569;">{{ q.payment_method or 'Cash' }}</td>
+          <td><span class="badge badge-{{ q.status|lower }}">{{ q.status }}</span></td>
+          <td style="font-weight: 500;">{{ q.priority }}</td>
+          <td>{{ q.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="9" style="text-align: center; color: #64748b; padding: 40px 0;">No inquiries found.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <script>
+    document.getElementById('time-stamp').textContent = new Date().toLocaleString();
+    window.addEventListener('DOMContentLoaded', () => {
+      // Auto trigger print dialogue
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

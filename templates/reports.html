@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Reports &amp; Analytics</h1>
+    <p class="muted">Review financial stats, payment channel metrics, and active session volume.</p>
+  </div>
+</div>
+
+<!-- Financial Stats Grid -->
+<section class="stats">
+  <div class="stat-card" style="border-left: 4px solid #10b981;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Total Sales Revenue</h3>
+        <strong style="color: #047857;">₹{{ '%.2f'|format(total_sales) }}</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">All payments received</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card" style="border-left: 4px solid #ef4444;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Total Expenditures</h3>
+        <strong style="color: #b91c1c;">₹{{ '%.2f'|format(total_expenses) }}</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">All recorded expenses</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #fef2f2; display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path stroke-linecap="round" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card" style="border-left: 4px solid {% if net_profit >= 0 %}#6366f1{% else %}#ef4444{% endif %};">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Net Profit / Cash Flow</h3>
+        <strong style="color: {% if net_profit >= 0 %}#4f46e5{% else %}#b91c1c{% endif %};">₹{{ '%.2f'|format(net_profit) }}</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Revenue minus expenses</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: {% if net_profit >= 0 %}#eef2ff{% else %}#fef2f2{% endif %}; display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="{% if net_profit >= 0 %}#6366f1{% else %}#ef4444{% endif %}" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card" style="border-left: 4px solid #0ea5e9;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Customer Directory</h3>
+        <strong style="color: #0369a1;">{{ customers_count }} Clients</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Registered customers</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #f0f9ff; display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ea5e9" stroke-width="2"><path stroke-linecap="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" d="M23 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Charts Row -->
+<div class="grid-2" style="margin-bottom: 35px;">
+  <!-- Last 7 Days Revenue Chart -->
+  <section class="panel" style="margin-bottom: 0;">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#6366f1" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Revenue — Last 7 Days
+    </h3>
+    <div style="position: relative; height: 220px;">
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Last 6 Months Chart -->
+  <section class="panel" style="margin-bottom: 0;">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#be123c" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Revenue vs Expenses — Last 6 Months
+    </h3>
+    <div style="position: relative; height: 220px;">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </section>
+</div>
+
+<div class="grid-2">
+  <!-- Payment Method Breakdown -->
+  <section class="panel">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Revenue Split by Payment Mode</h3>
+
+    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+      <div style="flex: 1; text-align: center; padding: 16px; border-radius: 12px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+        <p style="font-size: 11px; font-weight: 600; color: #166534; text-transform: uppercase; margin-bottom: 4px;">💵 Cash</p>
+        <p style="font-size: 20px; font-weight: 800; color: #15803d; margin: 0;">₹{{ '%.0f'|format(cash_payments) }}</p>
+      </div>
+      <div style="flex: 1; text-align: center; padding: 16px; border-radius: 12px; background: #f0f9ff; border: 1px solid #bae6fd;">
+        <p style="font-size: 11px; font-weight: 600; color: #0369a1; text-transform: uppercase; margin-bottom: 4px;">⚡ UPI</p>
+        <p style="font-size: 20px; font-weight: 800; color: #0284c7; margin: 0;">₹{{ '%.0f'|format(upi_payments) }}</p>
+      </div>
+      <div style="flex: 1; text-align: center; padding: 16px; border-radius: 12px; background: #faf5ff; border: 1px solid #e9d5ff;">
+        <p style="font-size: 11px; font-weight: 600; color: #6b21a8; text-transform: uppercase; margin-bottom: 4px;">💳 Card</p>
+        <p style="font-size: 20px; font-weight: 800; color: #7c3aed; margin: 0;">₹{{ '%.0f'|format(card_payments) }}</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+          <span>💵 Cash Payments</span>
+          <span>{% if total_sales > 0 %}{{ '%.1f'|format((cash_payments / total_sales) * 100) }}%{% else %}0%{% endif %}</span>
+        </div>
+        <div style="width: 100%; height: 8px; background-color: #f1f5f9; border-radius: 9999px; overflow: hidden;">
+          <div class="progress-bar" data-width="{% if total_sales > 0 %}{{ (cash_payments / total_sales) * 100 }}{% else %}0{% endif %}" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 9999px; width: 0%; transition: width 1.2s ease;"></div>
+        </div>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+          <span>⚡ UPI Digital Pay</span>
+          <span>{% if total_sales > 0 %}{{ '%.1f'|format((upi_payments / total_sales) * 100) }}%{% else %}0%{% endif %}</span>
+        </div>
+        <div style="width: 100%; height: 8px; background-color: #f1f5f9; border-radius: 9999px; overflow: hidden;">
+          <div class="progress-bar" data-width="{% if total_sales > 0 %}{{ (upi_payments / total_sales) * 100 }}{% else %}0{% endif %}" style="height: 100%; background: linear-gradient(90deg, #0ea5e9, #38bdf8); border-radius: 9999px; width: 0%; transition: width 1.2s ease;"></div>
+        </div>
+      </div>
+      <div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+          <span>💳 Card Transactions</span>
+          <span>{% if total_sales > 0 %}{{ '%.1f'|format((card_payments / total_sales) * 100) }}%{% else %}0%{% endif %}</span>
+        </div>
+        <div style="width: 100%; height: 8px; background-color: #f1f5f9; border-radius: 9999px; overflow: hidden;">
+          <div class="progress-bar" data-width="{% if total_sales > 0 %}{{ (card_payments / total_sales) * 100 }}{% else %}0{% endif %}" style="height: 100%; background: linear-gradient(90deg, #a855f7, #c084fc); border-radius: 9999px; width: 0%; transition: width 1.2s ease;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Job/Token Volume Analytics -->
+  <section class="panel">
+    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px;">Session &amp; Job Volume</h3>
+
+    <div style="position: relative; height: 200px; margin-bottom: 20px;">
+      <canvas id="jobsDonut"></canvas>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: center;">
+      <div style="padding: 20px; border: 1px solid var(--card-border); border-radius: 12px; background: #f8fafc;">
+        <h4 style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Completed Jobs</h4>
+        <span style="font-size: 32px; font-weight: 800; color: #166534; display: block;">{{ completed_jobs }}</span>
+      </div>
+      <div style="padding: 20px; border: 1px solid var(--card-border); border-radius: 12px; background: #f8fafc;">
+        <h4 style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 6px;">Active Sessions</h4>
+        <span style="font-size: 32px; font-weight: 800; color: #1e40af; display: block;">{{ active_jobs }}</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // ---- Daily Revenue Chart ----
+  const dailyLabels = {{ daily_labels | safe }};
+  const dailyRevenue = {{ daily_revenue | safe }};
+  const dailyExpenses = {{ daily_expenses | safe }};
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels: dailyLabels,
+      datasets: [
+        {
+          label: 'Revenue (₹)',
+          data: dailyRevenue,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,0.08)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#10b981',
+          pointRadius: 4,
+          borderWidth: 2.5,
+        },
+        {
+          label: 'Expenses (₹)',
+          data: dailyExpenses,
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.06)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#ef4444',
+          pointRadius: 4,
+          borderWidth: 2.5,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Plus Jakarta Sans', size: 12 }, boxWidth: 12 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 } } },
+        y: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, callback: v => '₹' + v } }
+      }
+    }
+  });
+
+  // ---- Monthly Chart ----
+  const monthlyLabels = {{ monthly_labels | safe }};
+  const monthlyRevenue = {{ monthly_revenue | safe }};
+  const monthlyExpenses = {{ monthly_expenses | safe }};
+
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: monthlyLabels,
+      datasets: [
+        {
+          label: 'Revenue (₹)',
+          data: monthlyRevenue,
+          backgroundColor: 'rgba(99,102,241,0.8)',
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+        {
+          label: 'Expenses (₹)',
+          data: monthlyExpenses,
+          backgroundColor: 'rgba(239,68,68,0.6)',
+          borderRadius: 6,
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Plus Jakarta Sans', size: 12 }, boxWidth: 12 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 } } },
+        y: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Plus Jakarta Sans', size: 11 }, callback: v => '₹' + v } }
+      }
+    }
+  });
+
+  // ---- Jobs Donut ----
+  const totalJobs = {{ completed_jobs }} + {{ active_jobs }};
+  new Chart(document.getElementById('jobsDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Active'],
+      datasets: [{
+        data: [{{ completed_jobs }}, {{ active_jobs }}],
+        backgroundColor: ['#10b981', '#3b82f6'],
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Plus Jakarta Sans', size: 12 }, boxWidth: 12 } }
+      }
+    }
+  });
+
+  // Animate progress bars on load
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      document.querySelectorAll('.progress-bar').forEach(function(bar) {
+        bar.style.width = bar.dataset.width + '%';
+      });
+    }, 200);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Add New Service Item</h1>
+    <p class="muted">Register a new service with standard pricing in the database catalogue.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('services') }}">Back to Catalogue</a>
+</div>
+
+<section class="panel" style="max-width: 600px;">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Service Name / Title</label>
+      <input class="form-control" id="name" name="name" placeholder="e.g. Spiral Binding (Up to 100 pages)" required>
+    </div>
+    <div class="form-group">
+      <label for="price">Standard Service Price (₹)</label>
+      <input class="form-control" type="number" step="0.01" id="price" name="price" placeholder="40.00" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Service Description / Notes</label>
+      <textarea class="form-control" id="description" name="description" rows="4" placeholder="Mention specifications, per-page rates, or extra fees..."></textarea>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      <button class="btn btn-primary" type="submit">Add Service</button>
+      <a class="btn btn-light" href="{{ url_for('services') }}" style="margin-left: 8px;">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

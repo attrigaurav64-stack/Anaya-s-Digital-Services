@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 id="greeting-text">Dashboard</h1>
+    <p class="muted">Real-time overview of your Cyber Cafe operations, revenues, and tasks.</p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <a class="btn btn-primary" href="{{ url_for('add_job') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg>
+      New PC Session
+    </a>
+    <a class="btn btn-light" href="{{ url_for('add_query') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"/></svg>
+      Add Inquiry
+    </a>
+  </div>
+</div>
+
+<!-- Stats Grid (6 cards) -->
+<section class="stats" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="stat-card" style="border-left: 4px solid #10b981; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Total Revenue</h3>
+        <strong class="count-up" data-target="{{ total_payments|float }}" data-prefix="₹" data-decimals="2">₹0.00</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">All-time payment receipts</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#10b981" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #ef4444; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Total Expenses</h3>
+        <strong class="count-up" data-target="{{ total_expenses|float }}" data-prefix="₹" data-decimals="2">₹0.00</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">All-time expenditures</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #fef2f2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#ef4444" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid {% if net_profit >= 0 %}#6366f1{% else %}#ef4444{% endif %}; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Net Profit</h3>
+        <strong class="count-up" data-target="{{ net_profit|float }}" data-prefix="₹" data-decimals="2" style="color: {% if net_profit >= 0 %}#4f46e5{% else %}#b91c1c{% endif %};">₹0.00</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Revenue minus expenses</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: {% if net_profit >= 0 %}#eef2ff{% else %}#fef2f2{% endif %}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="{% if net_profit >= 0 %}#6366f1{% else %}#ef4444{% endif %}" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #f59e0b; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Active Sessions</h3>
+        <strong class="count-up" data-target="{{ active_tokens }}" data-prefix="" data-decimals="0">0</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Currently running PCs</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #fffbeb; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #0ea5e9; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>Total Customers</h3>
+        <strong class="count-up" data-target="{{ total_customers }}" data-prefix="" data-decimals="0">0</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Registered in directory</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #f0f9ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0ea5e9" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card" style="border-left: 4px solid #be123c; position: relative; overflow: hidden;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h3>New Inquiries</h3>
+        <strong class="count-up" data-target="{{ new_queries }}" data-prefix="" data-decimals="0">0</strong>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Awaiting action</p>
+      </div>
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #fff1f2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#be123c" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="grid-2">
+  <!-- Active Jobs Table -->
+  <section class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 18px; font-weight: 700;">Active Jobs &amp; Computer Tokens</h2>
+      <a href="{{ url_for('jobs') }}" style="font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+        View All
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>PC</th>
+            <th>Customer</th>
+            <th>Duration</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for token in recent_tokens %}
+            <tr>
+              <td><span style="font-family: monospace; font-weight: 700; color: var(--primary); background: #fff1f2; padding: 3px 8px; border-radius: 6px; font-size: 12px;">{{ token.token_code }}</span></td>
+              <td><strong>{{ token.pc_number }}</strong></td>
+              <td>{{ token.customer_name }}</td>
+              <td>
+                {% if token.duration_mins > 0 %}
+                  <span style="font-size: 12px; background: #f0fdf4; color: #166534; padding: 3px 8px; border-radius: 6px; font-weight: 600;">{{ token.duration_mins }}m</span>
+                {% else %}
+                  <span style="font-size: 12px; background: #f8fafc; color: #64748b; padding: 3px 8px; border-radius: 6px; font-weight: 600;">Open</span>
+                {% endif %}
+              </td>
+              <td><strong>₹{{ token.cost }}</strong></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="display: block; margin: 0 auto 8px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                No active computer sessions.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Recent Inquiries Table -->
+  <section class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 18px; font-weight: 700;">Recent Inquiries</h2>
+      <a href="{{ url_for('queries') }}" style="font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+        View All
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in recent_queries %}
+            <tr>
+              <td>
+                <strong>{{ q.customer_name }}</strong><br>
+                <small class="muted">{{ q.phone }}</small>
+              </td>
+              <td style="font-size: 13px;">{{ q.service_type }}</td>
+              <td><strong>₹{{ '%.2f'|format(q.amount) }}</strong></td>
+              <td><span class="badge badge-{{ q.status|lower }}">{{ q.status }}</span></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="1.5" style="display: block; margin: 0 auto 8px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                No inquiries registered yet.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  // Greeting message
+  (function() {
+    const h = new Date().getHours();
+    let greeting = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+    const name = "{{ session.get('admin_username') or session.get('staff_name') or 'there' }}";
+    document.getElementById('greeting-text').textContent = greeting + ', ' + name + ' 👋';
+  })();
+
+  // Animated count-up
+  document.addEventListener('DOMContentLoaded', function() {
+    const elements = document.querySelectorAll('.count-up');
+    const animDuration = 1200;
+
+    elements.forEach(function(el) {
+      const target = parseFloat(el.dataset.target) || 0;
+      const prefix = el.dataset.prefix || '';
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const start = performance.now();
+
+      function easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+      }
+
+      function step(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / animDuration, 1);
+        const eased = easeOutQuart(progress);
+        const current = eased * target;
+        el.textContent = prefix + current.toFixed(decimals);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+
+      // Only animate if IntersectionObserver supported
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              requestAnimationFrame(step);
+              observer.disconnect();
+            }
+          });
+        }, { threshold: 0.3 });
+        observer.observe(el);
+      } else {
+        requestAnimationFrame(step);
+      }
+    });
+  });
+</script>
+{% endblock %}

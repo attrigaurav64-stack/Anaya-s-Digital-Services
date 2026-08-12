@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>WhatsApp QR Code</h1>
+    <p class="muted">Display or print this QR code at your cyber cafe counter.</p>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+
+<section class="panel">
+  <div class="qr-box">
+    <h2 style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">{{ cafe_name }}</h2>
+    <p class="muted">Customers can scan this code to contact your cafe instantly on WhatsApp.</p>
+    
+    <img src="{{ url_for('static', filename='img/whatsapp_qr.png') }}" alt="WhatsApp QR">
+    
+    <p style="margin-top: 15px; font-size: 15px;">
+      <strong>WhatsApp Number:</strong> 
+      <span style="color: var(--primary); font-weight: 600;">+{{ number }}</span>
+    </p>
+    
+    <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <a class="btn btn-success" href="{{ whatsapp_link }}" target="_blank">💬 Open Chat Directly</a>
+      <p class="muted" style="max-width: 320px; font-size: 12px; line-height: 1.5;">
+        To automate saving of incoming WhatsApp messages directly to this dashboard, you can connect the WhatsApp Cloud API webhook.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

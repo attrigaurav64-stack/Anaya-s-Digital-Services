@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1>Inquiries & Orders</h1>
+    <p class="muted">Track customer requests, print jobs, and application forms.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('add_query') }}">+ Add New Inquiry</a>
+</div>
+
+<section class="panel">
+  <div class="toolbar" style="display: flex; flex-direction: column; gap: 15px;">
+    <form method="GET" class="filter-form" style="margin: 0; width: 100%;">
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input class="form-control" name="search" placeholder="Search customer, phone, service..." value="{{ search }}" style="width: 200px;">
+        
+        <select class="form-select" name="status" style="width: 130px;">
+          <option value="All" {% if status_filter == 'All' %}selected{% endif %}>All Statuses</option>
+          <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
+          <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+          <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+          <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+        
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Single Date:</span>
+        <input class="form-control" type="date" name="date_filter" value="{{ date_filter or '' }}" style="width: 135px;" id="date_filter">
+        
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Range:</span>
+        <input class="form-control" type="date" name="start_date" value="{{ start_date or '' }}" style="width: 135px;" id="start_date">
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">to</span>
+        <input class="form-control" type="date" name="end_date" value="{{ end_date or '' }}" style="width: 135px;" id="end_date">
+        
+        <button class="btn btn-dark" type="submit">Filter</button>
+        {% if search or status_filter != 'All' or date_filter or start_date or end_date %}
+          <a class="btn btn-light" href="{{ url_for('queries') }}">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+    
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
+      <a class="btn btn-light" href="{{ url_for('export_queries_csv', search=search, status=status_filter, date_filter=date_filter, start_date=start_date, end_date=end_date) }}" style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px;">
+        📈 Export Excel (CSV)
+      </a>
+      <a class="btn btn-light" href="{{ url_for('export_queries_print', search=search, status=status_filter, date_filter=date_filter, start_date=start_date, end_date=end_date) }}" target="_blank" style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px;">
+        🖨️ Print Report (PDF)
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dateFilter = document.getElementById('date_filter');
+      const startDate = document.getElementById('start_date');
+      const endDate = document.getElementById('end_date');
+      
+      if (dateFilter && startDate && endDate) {
+        dateFilter.addEventListener('change', function() {
+          if (dateFilter.value) {
+            startDate.value = '';
+            endDate.value = '';
+          }
+        });
+        
+        startDate.addEventListener('change', function() {
+          if (startDate.value) dateFilter.value = '';
+        });
+        
+        endDate.addEventListener('change', function() {
+          if (endDate.value) dateFilter.value = '';
+        });
+      }
+    });
+  </script>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Service / Priority</th>
+          <th>Query Description</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Registered</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in queries %}
+          <tr>
+            <td style="font-weight: 600; color: var(--text-muted);">#{{ q.id }}</td>
+            <td>
+              <strong>{{ q.customer_name }}</strong><br>
+              <small class="muted">{{ q.phone }}</small>
+            </td>
+            <td>
+              <span>{{ q.service_type }}</span><br>
+              <span class="priority-tag priority-{{ q.priority|lower }}">{{ q.priority }}</span>
+            </td>
+            <td style="max-width: 250px; font-size: 13px;">
+              <p style="margin: 0; font-weight: 500;">{{ q.message }}</p>
+              {% if q.notes %}
+                <small class="muted" style="display: block; margin-top: 4px; border-left: 2px solid var(--primary); padding-left: 6px;">Notes: {{ q.notes }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <strong>₹{{ '%.2f'|format(q.amount) }}</strong><br>
+              <span style="display: inline-block; font-size: 11px; margin-top: 4px; padding: 2px 6px; border-radius: 4px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 600;">
+                {{ q.payment_method or 'Cash' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge badge-{{ q.status|lower }}">{{ q.status }}</span>
+            </td>
+            <td>{{ q.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+            <td class="actions">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; gap: 6px;">
+                  <a href="{{ url_for('edit_query', query_id=q.id) }}">Edit</a>
+                  <span style="color: #cbd5e1;">|</span>
+                  <a onclick="return confirm('Are you sure you want to delete this inquiry?')" href="{{ url_for('delete_query', query_id=q.id) }}" class="action-danger">Delete</a>
+                </div>
+                <div style="font-size: 11px; margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                  {% if q.status != 'New' %}<a href="{{ url_for('update_status', query_id=q.id, status='New') }}" style="color: #64748b;">[New]</a>{% endif %}
+                  {% if q.status != 'Pending' %}<a href="{{ url_for('update_status', query_id=q.id, status='Pending') }}" style="color: #b45309;">[Pend]</a>{% endif %}
+                  {% if q.status != 'Completed' %}<a href="{{ url_for('update_status', query_id=q.id, status='Completed') }}" style="color: #15803d;">[Done]</a>{% endif %}
+                  {% if q.status != 'Cancelled' %}<a href="{{ url_for('update_status', query_id=q.id, status='Cancelled') }}" style="color: #b91c1c;">[Cancel]</a>{% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No inquiries found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
