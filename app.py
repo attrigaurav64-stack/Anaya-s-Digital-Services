@@ -170,12 +170,34 @@ def permission_required(permission_name):
     return decorator
 
 def get_setting(key, default=""):
+    env_map = {
+        "cafe_name": "CAFE_NAME",
+        "cafe_address": "CAFE_ADDRESS",
+        "cafe_whatsapp": "CAFE_WHATSAPP_NUMBER",
+        "cafe_upi": "CAFE_UPI"
+    }
+    env_var_name = env_map.get(key, key.upper())
+    env_val = os.getenv(env_var_name, "").strip()
+
     try:
         setting = Setting.query.filter_by(key=key).first()
-        if setting:
-            return setting.value
+        db_val = setting.value.strip() if (setting and setting.value) else ""
+        
+        # If DB value is customized (not default placeholder)
+        if db_val and db_val != "Your Location":
+            return db_val
+        # If env var is set and not default placeholder
+        if env_val and env_val != "Your Location":
+            return env_val
+        # Fallback to DB value if set
+        if db_val:
+            return db_val
     except Exception:
         pass
+
+    if env_val:
+        return env_val
+
     return default
 
 @app.context_processor
