@@ -12,12 +12,34 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "cyber-cafe-secret")
 
+import urllib.parse
+
 db_url = os.getenv("DATABASE_URL", "sqlite:///cybercafe.db")
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
+# Auto-sanitize connection string if password contains unencoded special characters like '@'
+if db_url and db_url.startswith("postgresql://"):
+    try:
+        prefix, rest = db_url.split("://", 1)
+        if "@" in rest:
+            last_at_idx = rest.rfind("@")
+            user_pass = rest[:last_at_idx]
+            host_db = rest[last_at_idx + 1:]
+            if ":" in user_pass:
+                user, password = user_pass.split(":", 1)
+                # Encode special characters in password (like @, #, $) safely
+                quoted_password = urllib.parse.quote_plus(urllib.parse.unquote(password))
+                db_url = f"{prefix}://{user}:{quoted_password}@{host_db}"
+    except Exception as e:
+        print(f"Warning: Could not auto-sanitize DATABASE_URL: {e}")
+
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 
 db = SQLAlchemy(app)
 
@@ -1314,70 +1336,73 @@ def whatsapp_webhook():
 
 # --- DB INIT ---
 
-with app.app_context():
-    db.create_all()
-    
-    # Run migration for staff table schema updates
-    try:
-        db.session.execute(db.text("SELECT username FROM staff LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            db.session.execute(db.text("ALTER TABLE staff ADD COLUMN username VARCHAR(80)"))
-            db.session.execute(db.text("ALTER TABLE staff ADD COLUMN password_hash VARCHAR(255)"))
-            db.session.execute(db.text("ALTER TABLE staff ADD COLUMN permissions TEXT"))
-            db.session.commit()
-        except Exception as ex:
-            db.session.rollback()
-            print(f"Schema migration warning: {ex}")
-            
-    # Run migration to check if email column exists in staff
-    try:
-        db.session.execute(db.text("SELECT email FROM staff LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            db.session.execute(db.text("ALTER TABLE staff ADD COLUMN email VARCHAR(120)"))
-            db.session.commit()
-        except Exception as ex:
-            db.session.rollback()
-            print(f"Staff email migration warning: {ex}")
-            
-    # Run migration for query table schema updates
-    try:
-        db.session.execute(db.text("SELECT payment_method FROM query LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            db.session.execute(db.text("ALTER TABLE query ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Cash'"))
-            db.session.commit()
-        except Exception as ex:
-            db.session.rollback()
-            print(f"Query table schema migration warning: {ex}")
-    
-    default_username = os.getenv("ADMIN_USERNAME", "admin")
-    default_password = os.getenv("ADMIN_PASSWORD", "admin123")
-    if not Admin.query.filter_by(username=default_username).first():
-        db.session.add(Admin(username=default_username, password_hash=generate_password_hash(default_password)))
+try:
+    with app.app_context():
+        db.create_all()
         
-    defaults = {
-        "cafe_name": os.getenv("CAFE_NAME", "Anaya's Digital Services"),
-        "cafe_address": os.getenv("CAFE_ADDRESS", "Your Location"),
-        "cafe_whatsapp": os.getenv("CAFE_WHATSAPP_NUMBER", "919876543210"),
-        "cafe_upi": "pskaplish@okaxis"
-    }
-    for k, v in defaults.items():
-        if not Setting.query.filter_by(key=k).first():
-            db.session.add(Setting(key=k, value=v))
-            
-    if not Service.query.first():
-        db.session.add(Service(name="Computer Use (1 Hour)", price=40.0, description="High speed internet browsing and system access."))
-        db.session.add(Service(name="Black & White Printout (A4)", price=5.0, description="Laser print per page."))
-        db.session.add(Service(name="Color Printout (A4)", price=15.0, description="Laser color print per page."))
-        db.session.add(Service(name="Scanning Documents", price=10.0, description="Scan to PDF / Email."))
-        db.session.add(Service(name="Lamination (A4)", price=30.0, description="Standard plastic sealing."))
+        # Run migration for staff table schema updates
+        try:
+            db.session.execute(db.text("SELECT username FROM staff LIMIT 1"))
+        except Exception:
+            db.session.rollback()
+            try:
+                db.session.execute(db.text("ALTER TABLE staff ADD COLUMN username VARCHAR(80)"))
+                db.session.execute(db.text("ALTER TABLE staff ADD COLUMN password_hash VARCHAR(255)"))
+                db.session.execute(db.text("ALTER TABLE staff ADD COLUMN permissions TEXT"))
+                db.session.commit()
+            except Exception as ex:
+                db.session.rollback()
+                print(f"Schema migration warning: {ex}")
+                
+        # Run migration to check if email column exists in staff
+        try:
+            db.session.execute(db.text("SELECT email FROM staff LIMIT 1"))
+        except Exception:
+            db.session.rollback()
+            try:
+                db.session.execute(db.text("ALTER TABLE staff ADD COLUMN email VARCHAR(120)"))
+                db.session.commit()
+            except Exception as ex:
+                db.session.rollback()
+                print(f"Staff email migration warning: {ex}")
+                
+        # Run migration for query table schema updates
+        try:
+            db.session.execute(db.text("SELECT payment_method FROM query LIMIT 1"))
+        except Exception:
+            db.session.rollback()
+            try:
+                db.session.execute(db.text("ALTER TABLE query ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Cash'"))
+                db.session.commit()
+            except Exception as ex:
+                db.session.rollback()
+                print(f"Query table schema migration warning: {ex}")
         
-    db.session.commit()
+        default_username = os.getenv("ADMIN_USERNAME", "admin")
+        default_password = os.getenv("ADMIN_PASSWORD", "admin123")
+        if not Admin.query.filter_by(username=default_username).first():
+            db.session.add(Admin(username=default_username, password_hash=generate_password_hash(default_password)))
+            
+        defaults = {
+            "cafe_name": os.getenv("CAFE_NAME", "Anaya's Digital Services"),
+            "cafe_address": os.getenv("CAFE_ADDRESS", "Your Location"),
+            "cafe_whatsapp": os.getenv("CAFE_WHATSAPP_NUMBER", "919876543210"),
+            "cafe_upi": "pskaplish@okaxis"
+        }
+        for k, v in defaults.items():
+            if not Setting.query.filter_by(key=k).first():
+                db.session.add(Setting(key=k, value=v))
+                
+        if not Service.query.first():
+            db.session.add(Service(name="Computer Use (1 Hour)", price=40.0, description="High speed internet browsing and system access."))
+            db.session.add(Service(name="Black & White Printout (A4)", price=5.0, description="Laser print per page."))
+            db.session.add(Service(name="Color Printout (A4)", price=15.0, description="Laser color print per page."))
+            db.session.add(Service(name="Scanning Documents", price=10.0, description="Scan to PDF / Email."))
+            db.session.add(Service(name="Lamination (A4)", price=30.0, description="Standard plastic sealing."))
+            
+        db.session.commit()
+except Exception as err:
+    print(f"⚠️ Warning: Database initialization skipped due to connection error: {err}")
 
 if __name__ == "__main__":
     app.run(debug=True)

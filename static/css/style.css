@@ -173,6 +173,44 @@ textarea.form-control {
   resize: vertical;
 }
 
+/* Password Toggle Wrapper & Button */
+.password-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-group .form-control {
+  padding-right: 44px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  user-select: none;
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+  color: var(--primary);
+}
+
 /* Button Styles */
 .btn {
   font-family: inherit;
